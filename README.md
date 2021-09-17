@@ -7,4 +7,7 @@ place honey block, and right click with empty mainhand. it will be 'direction', 
 right click at nothing with empty hands will toggle ON/OFF.</br>
 Currently it requires carpet extra's accurateblockplacement (since it has to place piston reversed), but I can make it to lazy-place pistons, if you go 'back' the route. </br>
 diagonal one requires you to go back and forth 2 times because it has 2 direction of pistons. </br>
-Due to ping, server might not allow your fast block placement or something.. it currently places 120blocks per second at maxima.
+Due to ping, server might not allow your fast block placement or something.. it currently places 120blocks per second at maxima.</br>
+# Materials
+materials are now hardcoded, for straight, you need pickaxe(eff 5), rails, smooth quartz, white carpet, repeater,piston, dust.</br>
+for Diagonal, you need pickaxe, smooth quartz, sea lantern, rails, repeater, dust, sticky piston.
