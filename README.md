@@ -11,3 +11,7 @@ Due to ping, server might not allow your fast block placement or something.. it 
 # Materials
 materials are now hardcoded, for straight, you need pickaxe(eff 5), rails, smooth quartz, white carpet, repeater,piston, dust.</br>
 for Diagonal, you need pickaxe, smooth quartz, sea lantern, rails, repeater, dust, sticky piston.
+# How to build mod
+download code zip and unzip somewhere. </br>
+copy path and run cmd (windows), type cd <ctrl +V></br>
+then type /gradlew build. if you want to change something, go to src folder and surf.
