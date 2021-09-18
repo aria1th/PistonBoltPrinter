@@ -1,10 +1,8 @@
 package aria1th.main.pistonboltbuilder.utils;
 
+import net.minecraft.block.*;
 import net.minecraft.enchantment.EnchantmentHelper;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.Block;
 //import net.minecraft.block.FluidBlock;
-import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
@@ -23,35 +21,74 @@ import net.minecraft.world.World;
 import aria1th.main.pistonboltbuilder.utils.PistonBoltMain;
 import aria1th.main.pistonboltbuilder.utils.PistonBoltMain.ActionYield;
 
-import java.util.LinkedList;
-import java.util.List;
-import java.util.LinkedHashMap;
+import java.util.*;
+import java.util.stream.Collectors;
+
+import static com.google.common.collect.Iterables.size;
 
 
 public class Actionhandler {
     private final static int actionPerTick = 6;
-    private static PistonBoltMain pistonHandler = new PistonBoltMain();
-    private static LinkedList<Actionhandler> actionList = new LinkedList<Actionhandler>();
+    private static boolean carpetAvailable = false;
+    private static Long carpetCheckedTick = 0L;
+    private static boolean carpetChecked = false;
+    private static BlockPos carpetUsedBlockPos = null;
+    private static final PistonBoltMain pistonHandler = new PistonBoltMain();
+    private static final LinkedList<Actionhandler> actionList = new LinkedList<>();
+    private final List<PistonBoltMain.ActionYield.Action> temporaryActionList = new ArrayList<>();
+    private final LinkedHashMap<Long, Boolean> temporaryActionListBool = new LinkedHashMap<>();
     private static Long pos1 = null;
     private static Long pos2 = null;
-    private Long tick;
     private static boolean isOff = true;
+    private static Long tick = 0L;
     private PistonBoltMain.ActionYield.Action previousAction = null;
-    private BlockPos startPos;
-    private Direction direction;
-    private boolean isStraight;
-    private static final int reachDistance = 7;
-    private PistonBoltMain.ActionYield actionYield;
+    private static final int reachDistance = 5;
+    private final PistonBoltMain.ActionYield actionYield;
     private static MinecraftClient mc = MinecraftClient.getInstance();
-    private World clientWorld = mc.world;
-    private static Item powerableBlockItem = Items.SMOOTH_QUARTZ; //can change, how?
-    private static Item carpetItem = Items.WHITE_CARPET; //can change or set it to null, how?
-    private static Item pushableItem = Items.SEA_LANTERN; //can change or set it to null, how?
+    private final World clientWorld;
+    private static final Item powerableBlockItem = Items.SMOOTH_QUARTZ; //can change, how?
+    private static final Item carpetItem = Items.WHITE_CARPET; //can change or set it to null, how?
+    private static final Item pushableItem = Items.SEA_LANTERN; //can change or set it to null, how?
+    private void checkCarpetExtra(){
+        if (carpetChecked) {return;}
+        if (carpetUsedBlockPos != null && tick > carpetCheckedTick + 45L){
+            if (!clientWorld.getBlockState(carpetUsedBlockPos).isOf(Blocks.REPEATER)) {
+                carpetUsedBlockPos = null;
+                return;
+            }
+            carpetAvailable = mc.player.getHorizontalFacing().rotateYClockwise() == clientWorld.getBlockState(carpetUsedBlockPos).get(RepeaterBlock.FACING);
+            carpetChecked = true;
+            System.out.println(carpetAvailable);
+            return;
+        }
+        else if (carpetUsedBlockPos != null && tick <= carpetCheckedTick + 45L) {
+            return;
+        }
+        Direction direction = mc.player.getHorizontalFacing();
+        BlockPos blockPos = mc.player.getBlockPos();
+        BlockPos testPos = BlockPos.streamOutwards(blockPos,6,6,6).
+                filter(a -> clientWorld.getBlockState(a).isAir()).
+                filter(a-> BlockPos.streamOutwards(blockPos,1,1,1).noneMatch(a::equals)).
+        filter(a-> RepeaterBlock.hasTopRim(clientWorld, a.down())).findFirst().orElse(null);
+        System.out.println(testPos);
+        if(testPos == null) {return;}
+        if (placeBlockCarpet(mc, testPos, direction.rotateYClockwise(), Items.REPEATER)) {
+            carpetCheckedTick = tick;
+            carpetUsedBlockPos = testPos;
+        }
+    }
+    public static boolean canPlaceFace(Item item, Direction facing){
+        if (carpetAvailable) {return true;}
+        if (Block.getBlockFromItem(item) instanceof RepeaterBlock){
+            return facing.getOpposite().equals(mc.player.getHorizontalFacing());
+        }
+        else if (Block.getBlockFromItem(item) instanceof PistonBlock){
+            return facing.getOpposite().equals(mc.player.getHorizontalFacing());
+        }
+        return true;
+    }
     public Actionhandler (Long startPos, Direction direction, boolean isStraight, World clientWorld){
-        this.tick = 0L;
-        this.startPos = BlockPos.fromLong(startPos);
-        this.direction = direction;
-        this.isStraight = isStraight;
+        BlockPos startPos1 = BlockPos.fromLong(startPos);
         this.clientWorld = clientWorld;
         mc = MinecraftClient.getInstance();
         this.actionYield = pistonHandler.new ActionYield(direction, startPos, powerableBlockItem, pushableItem, isStraight);
@@ -120,7 +157,7 @@ public class Actionhandler {
     public static void generateNew(){
         System.out.println(pos1);
         System.out.println(pos2);
-        if (pos1 == pos2){ //reset
+        if (Objects.equals(pos1, pos2)){ //reset
             pos1 = null;
             pos2 = null;
             return;
@@ -146,7 +183,6 @@ public class Actionhandler {
             }
         }
         else {
-            isStraight = false;
             if (a*b>0 && a>0){
                 direction = Direction.EAST;
             }
@@ -164,13 +200,24 @@ public class Actionhandler {
         new Actionhandler(pos1, direction, isStraight, mc.world);
     }
     public void tick(){
-        if (isOff) {return;}
-        if (this.previousAction != null && !checkAction(this.previousAction)) {
-            processAction(this.previousAction);
-            return;
+        tick++;
+        checkCarpetExtra();
+        this.temporaryActionList.removeAll(this.temporaryActionList.stream().filter(this::checkAction).collect(Collectors.toList()));
+        if (isOff || !carpetChecked) {return;}
+        if (this.previousAction != null && !checkAction(this.previousAction) &&
+                canPlaceFace(this.previousAction.itemMap.get(this.previousAction.itemType), Direction.byId(this.previousAction.relativeDirection))) {
+            if (canPlaceFace(this.previousAction.itemMap.get(this.previousAction.itemType), Direction.byId(this.previousAction.relativeDirection)) &&
+                    this.previousAction.itemType == 5 && clientWorld.getBlockState(BlockPos.fromLong(this.previousAction.blockPos)).isAir()){
+                temporaryActionList.add(this.previousAction);
+            }
+            else {
+                processAction(this.previousAction);
+                return;
+            }
         }
         PistonBoltMain.ActionYield.Action action = this.actionYield.getNext();
         processAction(action);
+        this.temporaryActionList.stream().filter(a -> !checkAction(a) && canProcess(a)).limit(1).iterator().forEachRemaining(this::processAction);
         this.previousAction = action;
     }
     public static void toggleOnOff(){
@@ -181,25 +228,37 @@ public class Actionhandler {
         Long longPos = action.blockPos;
         Block block = Block.getBlockFromItem(action.itemMap.get(action.itemType));
         if (shouldBreak) {
-            return this.mc.world.getBlockState(BlockPos.fromLong(longPos)).isAir();
+            return mc.world.getBlockState(BlockPos.fromLong(longPos)).isAir();
         }
         else{
-            return this.mc.world.getBlockState(BlockPos.fromLong(longPos)).isOf(block);
+            return mc.world.getBlockState(BlockPos.fromLong(longPos)).isOf(block);
         }
+    }
+    private static boolean canProcess(PistonBoltMain.ActionYield.Action action){
+        return action.ShouldBreak || canPlaceFace(action.itemMap.get(action.itemType), Direction.byId(action.relativeDirection)) && isWithinReach(BlockPos.fromLong(action.blockPos));
     }
     private boolean processAction(PistonBoltMain.ActionYield.Action action){
         boolean shouldBreak = action.ShouldBreak;
         Long longPos = action.blockPos;
         Block block = Block.getBlockFromItem(action.itemMap.get(action.itemType));
         Direction direction = Direction.byId(action.relativeDirection);
+        //System.out.println(action.itemMap.get(action.itemType));
         if (!isWithinReach(BlockPos.fromLong(longPos))) {
             return false;
         }
         if (shouldBreak){
-            return breakBlock(this.mc, BlockPos.fromLong(longPos));
+            this.temporaryActionListBool.remove(action.blockPos);
+            return breakBlock(mc, BlockPos.fromLong(longPos));
         }
         else {
-            return placeBlockCarpet(mc, BlockPos.fromLong(longPos), direction, action.itemMap.get(action.itemType));
+            if (canPlaceFace(action.itemMap.get(action.itemType), direction)){
+                this.temporaryActionListBool.put(action.blockPos, true);
+                return placeBlockCarpet(mc, BlockPos.fromLong(longPos), direction, action.itemMap.get(action.itemType));
+            }
+            else {
+                temporaryActionList.add(action);
+                return false;
+            }
         }
     }
     public static void switchTool(MinecraftClient mc, BlockPos pos) {
