@@ -183,6 +183,10 @@ public class PistonBoltMain {
                     return world.getBlockState(BlockPos.fromLong(this.blockPos)).isOf(Block.getBlockFromItem(this.itemMap.get(this.itemType)));
                 }
             }
+            public String toString() {
+                BlockPos blockPos = BlockPos.fromLong(this.blockPos);
+                return String.format("%d, %d, %d, %s, %s", blockPos.getX() , blockPos.getY(), blockPos.getZ(), this.itemMap.get(this.itemType), Direction.byId(this.relativeDirection));
+            }
         }
     }
 
