@@ -29,7 +29,8 @@ import static com.google.common.collect.Iterables.size;
 
 public class Actionhandler {
     private final static int actionPerTick = 6;
-    private static boolean carpetAvailable = false;
+    private static int waitTime = 0;
+    private static boolean carpetAvailable = true;
     private static Long carpetCheckedTick = 0L;
     private static boolean carpetChecked = false;
     private static BlockPos carpetUsedBlockPos = null;
@@ -79,6 +80,7 @@ public class Actionhandler {
     }
     public static boolean canPlaceFace(Item item, Direction facing){
         if (carpetAvailable) {return true;}
+        if (facing.equals(Direction.UP) || facing.equals(Direction.DOWN)) {return true;}
         if (Block.getBlockFromItem(item) instanceof RepeaterBlock){
             return facing.getOpposite().equals(mc.player.getHorizontalFacing());
         }
@@ -202,22 +204,27 @@ public class Actionhandler {
     public void tick(){
         tick++;
         checkCarpetExtra();
-        this.temporaryActionList.removeAll(this.temporaryActionList.stream().filter(this::checkAction).collect(Collectors.toList()));
         if (isOff || !carpetChecked) {return;}
+        this.temporaryActionList.stream().filter(a -> !checkAction(a) && canProcess(a)).limit(1).iterator().forEachRemaining(this::processAction);
+        this.temporaryActionList.removeAll(this.temporaryActionList.stream().filter(this::checkAction).collect(Collectors.toList()));
         if (this.previousAction != null && !checkAction(this.previousAction) &&
                 canPlaceFace(this.previousAction.itemMap.get(this.previousAction.itemType), Direction.byId(this.previousAction.relativeDirection))) {
             if (canPlaceFace(this.previousAction.itemMap.get(this.previousAction.itemType), Direction.byId(this.previousAction.relativeDirection)) &&
-                    this.previousAction.itemType == 5 && clientWorld.getBlockState(BlockPos.fromLong(this.previousAction.blockPos)).isAir()){
+                    this.previousAction.itemType == 5 && clientWorld.getBlockState(BlockPos.fromLong(this.previousAction.blockPos).down()).isAir()){
                 temporaryActionList.add(this.previousAction);
             }
             else {
-                processAction(this.previousAction);
+                waitTime ++;
+                if (waitTime > 10){
+                    waitTime = 0;
+                    processAction(this.previousAction);
+                }
                 return;
             }
         }
+        //this.temporaryActionList.forEach(System.out::println);
         PistonBoltMain.ActionYield.Action action = this.actionYield.getNext();
         processAction(action);
-        this.temporaryActionList.stream().filter(a -> !checkAction(a) && canProcess(a)).limit(1).iterator().forEachRemaining(this::processAction);
         this.previousAction = action;
     }
     public static void toggleOnOff(){
