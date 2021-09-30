@@ -21,7 +21,8 @@ Materials are now hardcoded
 - White carpet
 - Repeater
 - Pistons
-- Redstone dustdust.</br>
+- Redstone Torch (directional)
+- Redstone dust.</br>
 ## Diagonal
 - Efficeny 5 pickaxe
 - Smooth quartz block
@@ -29,6 +30,7 @@ Materials are now hardcoded
 - Rails
 - Repeater
 - Dust
+- Redstone Torch (directional)
 - Sticky piston.
 # How to build mod
 1. Download the source code zip and unzip it
