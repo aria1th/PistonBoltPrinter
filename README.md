@@ -13,7 +13,8 @@ Diagonal: https://www.youtube.com/watch?v=idju85Dmu-Q <br>
 Straight: https://www.youtube.com/watch?v=7nXhzq2TBV8 <br>
 
 # Materials
-Materials are now hardcoded
+Materials are now hardcoded.
+A message in chat will appear if you are missing any blocks.
 ## Straight
 - Efficeny 5 pickaxe
 - Rails
