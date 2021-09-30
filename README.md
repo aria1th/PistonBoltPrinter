@@ -1,17 +1,34 @@
 # PistonBoltPrinter
-fabric mod to curve and build piston bolt automatically
+A fabric mod that automatically builds piston bolts for you!
 # How to use
-with emtpy hands.
-place slime block, and right click with empty mainhand. it will be start position.</br>
-place honey block, and right click with empty mainhand. it will be 'direction', so slime -> honey is bolt direction. it can go straight, diagonal.</br>
-right click at nothing with empty hands will toggle ON/OFF.</br>
-Currently it requires carpet extra's accurateblockplacement (since it has to place piston reversed), but I can make it to lazy-place pistons, if you go 'back' the route. </br>
-diagonal one requires you to go back and forth 2 times because it has 2 direction of pistons. </br>
-Due to ping, server might not allow your fast block placement or something.. it currently places 120blocks per second at maxima.</br>
+1. Place a slime block and right click it with an empty hand, this will create the starting position.
+2. Place a honey block and right click it with an empty hand, this will set the direction, the piston bolt's direction will be slime block --> honey block, it can go straight or diagonal.
+3. Walk in the direction you set and it will start building.
+# Other info
+Right clicking at nothing with an empty hand will toggle the mod ON/OFF.
+Currently the mod requires carpet extra's "accurateblockplacement" as it needs to place piston reversed. However, the mod can lazy-place pistons if you go back after. If you use lazy-place on diagonals, you will need to go twice as there are 2 direction of pistons on that one.
+Due to your ping, the server might not allow you to use your fast block placement. The mod currently places blocks at a speed of 120 blocks per second at its maximum
+
 # Materials
-materials are now hardcoded, for straight, you need pickaxe(eff 5), rails, smooth quartz, white carpet, repeater,piston, dust.</br>
-for Diagonal, you need pickaxe, smooth quartz, sea lantern, rails, repeater, dust, sticky piston.
+Materials are now hardcoded
+## Straight
+- Efficeny 5 pickaxe
+- Rails
+- Smooth quartz block
+- White carpet
+- Repeater
+- Pistons
+- Redstone dustdust.</br>
+## Diagonal
+- Efficeny 5 pickaxe
+- Smooth quartz block
+- Sea lanterns
+- Rails
+- Repeater
+- Dust
+- Sticky piston.
 # How to build mod
-download code zip and unzip somewhere. </br>
-copy path and run cmd (windows), type cd <ctrl +V></br>
-then type /gradlew build. if you want to change something, go to src folder and surf.
+1. Download the source code zip and unzip it
+2. Copy the file path and navigate there in command prompt (windows), types cd <Your location>
+3. Type /gradlew build. To change something go to the source folder and surf.
+
