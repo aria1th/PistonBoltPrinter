@@ -155,10 +155,10 @@ public class PistonBoltMain {
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise), 4, direction, false); //place powerableBlock
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yCounterClockwise).offset(yCounterClockwise), 2, direction.getOpposite(), false); //place repeater, facing east
                     this.addAction(this.blockPos.offset(direction).offset(yClockwise).offset(yClockwise), 2, direction.getOpposite(), false); //place repeater, facing east
-                this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
-                this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise).up(), 5, Direction.DOWN, false);; //place carpet
-                this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
-                this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false); //place carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
+                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise).up(), 5, Direction.DOWN, false);; //place carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
+                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false); //place carpet
                     this.blockPos = this.blockPos.offset(direction).offset(direction);//new
             }
         }
@@ -176,6 +176,7 @@ public class PistonBoltMain {
                 this.relativeDirection = relativeDirection;
             }
             public boolean isSuccess(){
+                World world = MinecraftClient.getInstance().world;
                 if (this.ShouldBreak) {
                     return world.getBlockState(BlockPos.fromLong(this.blockPos)).isAir();
                 }
