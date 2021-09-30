@@ -9,6 +9,7 @@ Right clicking at nothing with an empty hand will toggle the mod ON/OFF.<br>
 Carpet extra protocol status check and lacked materials will be printed at chat <br>
 Currently the mod requires carpet extra's "accurateblockplacement" as it needs to place piston reversed. However, the mod can lazy-place pistons if you go back after. If you use lazy-place on diagonals, you will need to go twice as there are 2 direction of pistons on that one.<br> 
 Due to your ping, the server might not allow you to use your fast block placement. The mod currently places blocks at a speed of 120 blocks per second at its maximum.<br> 
+If you leave and rejoin, it will cancel the operation, however, if you right click the rail and the very end, it will attempt to continue.
 ## Showcase Videos
 Diagonal: https://www.youtube.com/watch?v=idju85Dmu-Q <br>
 Straight: https://www.youtube.com/watch?v=7nXhzq2TBV8 <br>
