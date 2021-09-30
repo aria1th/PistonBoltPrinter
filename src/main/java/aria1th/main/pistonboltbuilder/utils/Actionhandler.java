@@ -6,6 +6,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -29,6 +30,7 @@ import static com.google.common.collect.Iterables.size;
 
 public class Actionhandler {
     private final static int actionPerTick = 6;
+    private static String previousMessage = null;
     private static int waitTime = 0;
     private static boolean carpetAvailable = true;
     private static Long carpetCheckedTick = 0L;
@@ -59,7 +61,7 @@ public class Actionhandler {
             }
             carpetAvailable = mc.player.getHorizontalFacing().rotateYClockwise() == clientWorld.getBlockState(carpetUsedBlockPos).get(RepeaterBlock.FACING);
             carpetChecked = true;
-            System.out.println(carpetAvailable);
+            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.of("Carpet protocol check : %s".format(String.valueOf(carpetAvailable))));
             return;
         }
         else if (carpetUsedBlockPos != null && tick <= carpetCheckedTick + 45L) {
@@ -118,6 +120,11 @@ public class Actionhandler {
         }
         return false;
     }
+    public static void chatMessage(Text text){
+        if (previousMessage!= null && previousMessage.equals(text.getString())) {return;}
+        MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
+        previousMessage = text.getString();
+    }
     public static boolean placeBlockCarpet(MinecraftClient mc, BlockPos pos, Direction facing, Item item) {
         if (!mc.world.getBlockState(pos).isAir()) {breakBlock(mc, pos);} //assure there's no block there, but can't deal with fluids, maybe slime or torch spam?
         if (playerInventorySwitch(item)) {
@@ -128,6 +135,7 @@ public class Actionhandler {
             return true;
         }
         else {
+            chatMessage(Text.of("No item: "+ item));
             return false;
         }
     }
