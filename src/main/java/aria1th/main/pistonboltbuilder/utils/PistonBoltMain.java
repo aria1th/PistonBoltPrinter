@@ -106,6 +106,14 @@ public class PistonBoltMain {
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,3), 3, direction, false); //piston
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(direction,5), 6, direction, false); //dust
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,5), 6, direction, false); //dust
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,3).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,3).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,4).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,4).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,6).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,6).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(direction,3).up(), 5, Direction.DOWN, false); //carpet
+            this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,3).up(), 5, Direction.DOWN, false); //carpet
             this.blockPos = blockPos.offset(direction,2).offset(yClockwise,2);
         }
         private void generateNewStraight(){
