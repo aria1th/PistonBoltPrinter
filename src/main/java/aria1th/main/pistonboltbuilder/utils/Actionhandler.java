@@ -6,6 +6,7 @@ import net.minecraft.enchantment.EnchantmentHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.text.Text;
 import net.minecraft.entity.player.PlayerInventory;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
@@ -29,6 +30,7 @@ import static com.google.common.collect.Iterables.size;
 
 public class Actionhandler {
     private final static int actionPerTick = 6;
+    private static String previousMessage = null;
     private static int waitTime = 0;
     private static boolean carpetAvailable = true;
     private static Long carpetCheckedTick = 0L;
@@ -59,7 +61,7 @@ public class Actionhandler {
             }
             carpetAvailable = mc.player.getHorizontalFacing().rotateYClockwise() == clientWorld.getBlockState(carpetUsedBlockPos).get(RepeaterBlock.FACING);
             carpetChecked = true;
-            System.out.println(carpetAvailable);
+            MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(Text.of("Carpet protocol check : %s".format(String.valueOf(carpetAvailable))));
             return;
         }
         else if (carpetUsedBlockPos != null && tick <= carpetCheckedTick + 45L) {
@@ -96,6 +98,7 @@ public class Actionhandler {
         this.actionYield = pistonHandler.new ActionYield(direction, startPos, powerableBlockItem, pushableItem, isStraight);
         actionList.add(this);
     }
+
     public static void tickAll(){
         for (int i = 0; i< actionPerTick; i++){
             for (Actionhandler lv : actionList){
@@ -118,6 +121,11 @@ public class Actionhandler {
         }
         return false;
     }
+    public static void chatMessage(Text text){
+        if (previousMessage!= null && previousMessage.equals(text.getString())) {return;}
+        MinecraftClient.getInstance().inGameHud.getChatHud().addMessage(text);
+        previousMessage = text.getString();
+    }
     public static boolean placeBlockCarpet(MinecraftClient mc, BlockPos pos, Direction facing, Item item) {
         if (!mc.world.getBlockState(pos).isAir()) {breakBlock(mc, pos);} //assure there's no block there, but can't deal with fluids, maybe slime or torch spam?
         if (playerInventorySwitch(item)) {
@@ -128,6 +136,7 @@ public class Actionhandler {
             return true;
         }
         else {
+            chatMessage(Text.of("No item: "+ item));
             return false;
         }
     }
@@ -201,6 +210,124 @@ public class Actionhandler {
         mc = MinecraftClient.getInstance();
         new Actionhandler(pos1, direction, isStraight, mc.world);
     }
+    public static String detectExisting(Long longPos){
+        BlockPos blockPos = BlockPos.fromLong(longPos);
+        Optional<BlockPos> directionPos = BlockPos.streamOutwards(blockPos,1,0,1).
+                filter(a -> mc.world.getBlockState(a) != null && mc.world.getBlockState(a).isOf(Blocks.RAIL) && a.asLong() != blockPos.asLong()).findAny();
+        if(!directionPos.isPresent()){
+            return null;
+        }
+        BlockPos optionalPos = directionPos.get();
+        if (determineIsDiagonal(optionalPos, blockPos)){ //diagonal
+            return mc.world.getBlockState(optionalPos).get(RailBlock.SHAPE).asString(); //follow its rail shape
+        }
+        else { //straight
+            HashSet<String> hashSet1 = new HashSet<String>(Arrays.asList(mc.world.getBlockState(optionalPos).get(RailBlock.SHAPE).asString().split("_")));
+            HashSet<String> hashSet2 = new HashSet<String>(Arrays.asList(mc.world.getBlockState(blockPos).get(RailBlock.SHAPE).asString().split("_")));
+            hashSet1.retainAll(hashSet2);
+            if (!hashSet1.isEmpty()){
+                return hashSet1.stream().findAny().get();
+            }
+        }
+        return null;
+    }
+    public static void resumeExisting(Long longPos){
+        String direction = detectExisting(longPos);
+        System.out.println(direction);
+        if (direction == null) {return;}
+        String railShape = mc.world.getBlockState(BlockPos.fromLong(longPos)).get(RailBlock.SHAPE).asString();
+        BlockPos startPos = BlockPos.fromLong(longPos);
+        BlockPos fromLongPos = BlockPos.fromLong(longPos);
+        Direction resumeDirection;
+        boolean isResumeStraight = true;
+        switch (direction) {
+            case "west":
+                resumeDirection = Direction.WEST;
+                if (railShape.equals("north_west")){
+                    startPos = fromLongPos.east();
+                }
+                else {
+                    startPos = fromLongPos.offset(Direction.EAST,2);
+                }
+                break;
+            case "east":
+                resumeDirection = Direction.EAST;
+                if (railShape.equals("south_east")){
+                    startPos = fromLongPos.west();
+                }
+                else {
+                    startPos = fromLongPos.offset(Direction.WEST,2);
+                }
+                break;
+            case "north":
+                resumeDirection = Direction.NORTH;
+                if (railShape.equals("north_east")){
+                    startPos = fromLongPos.south();
+                }
+                else {
+                    startPos = fromLongPos.offset(Direction.SOUTH,2);
+                }
+                break;
+            case "south":
+                resumeDirection = Direction.SOUTH;
+                if (railShape.equals("south_west")){
+                    startPos = fromLongPos.north();
+                }
+                else {
+                    startPos = fromLongPos.offset(Direction.NORTH,2);
+                }
+                break;
+            case "south_west":
+                resumeDirection = Direction.SOUTH;
+                isResumeStraight = false;
+                if (mc.world.isAir(fromLongPos.offset(Direction.WEST,4))){
+                    startPos = fromLongPos.east(2).north(2);
+                }
+                else {
+                    startPos = fromLongPos.east().north();
+                }
+                break;
+            case "south_east":
+                resumeDirection = Direction.EAST;
+                isResumeStraight = false;
+                if (mc.world.isAir(fromLongPos.offset(Direction.SOUTH,4))){
+                    startPos = fromLongPos.west(2).north(2);
+                }
+                else {
+                    startPos = fromLongPos.west().north();
+                }
+                break;
+            case "north_west":
+                resumeDirection = Direction.WEST;
+                isResumeStraight = false;
+                if (mc.world.isAir(fromLongPos.offset(Direction.NORTH,4))){
+                    startPos = fromLongPos.east(2).south(2);
+                }
+                else {
+                    startPos = fromLongPos.east().south();
+                }
+                break;
+            case "north_east":
+                resumeDirection = Direction.NORTH;
+                isResumeStraight = false;
+                if (mc.world.isAir(fromLongPos.offset(Direction.EAST,4))){
+                    startPos = fromLongPos.west(2).south(2);
+                }
+                else {
+                    startPos = fromLongPos.west().south();
+                }
+                break;
+            default:
+                return;
+        }
+        mc = MinecraftClient.getInstance();
+        new Actionhandler(startPos.asLong(), resumeDirection, isResumeStraight, mc.world);
+    }
+    public static boolean determineIsDiagonal(BlockPos blockPosA,BlockPos blockPosB){
+        BlockPos subPos = blockPosA.subtract(blockPosB);
+        System.out.println(subPos);
+        return subPos.getX()!=0 && subPos.getZ()!=0;
+    }
     public void tick(){
         tick++;
         checkCarpetExtra();
@@ -224,7 +351,9 @@ public class Actionhandler {
         }
         //this.temporaryActionList.forEach(System.out::println);
         PistonBoltMain.ActionYield.Action action = this.actionYield.getNext();
-        processAction(action);
+        if(!action.isSuccess()) {
+            processAction(action);
+        }
         this.previousAction = action;
     }
     public static void toggleOnOff(){

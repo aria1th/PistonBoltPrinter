@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "id": "pistonboltbuilder",
-  "version": "1.0.0",
+  "version": "1.0.3",
 
   "name": "PistonBoltBuilder",
   "description": "set Pos1 with right clicking slime block, set Pos2 with right clicking honey block, toggle on/off to click nowhere, reset position selection with setting pos1 and pos2 to same position",

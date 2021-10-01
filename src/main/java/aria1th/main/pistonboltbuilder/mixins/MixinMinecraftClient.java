@@ -1,5 +1,6 @@
 package aria1th.main.pistonboltbuilder.mixins;
 
+import net.minecraft.block.RailBlock;
 import net.minecraft.block.WetSpongeBlock;
 import net.minecraft.block.SlimeBlock;
 import net.minecraft.block.HoneyBlock;
@@ -35,7 +36,7 @@ public class MixinMinecraftClient {
     private void switchOnOff(CallbackInfo ci){
         if (this.crosshairTarget.getType() == HitResult.Type.MISS) {
             Actionhandler.toggleOnOff();
-            System.out.println("on");
+            System.out.println("on/off");
         }
         if (this.crosshairTarget.getType() == HitResult.Type.BLOCK && world.getBlockState(((BlockHitResult)this.crosshairTarget).getBlockPos()).getBlock() instanceof SlimeBlock && player.getMainHandStack().isEmpty()) {
             Actionhandler.registerStartPos(((BlockHitResult)this.crosshairTarget).getBlockPos().asLong());
@@ -44,6 +45,10 @@ public class MixinMinecraftClient {
         if (this.crosshairTarget.getType() == HitResult.Type.BLOCK && world.getBlockState(((BlockHitResult)this.crosshairTarget).getBlockPos()).getBlock() instanceof HoneyBlock && player.getMainHandStack().isEmpty()) {
             Actionhandler.registerEndPos(((BlockHitResult)this.crosshairTarget).getBlockPos().asLong());
             System.out.println("pos2");
+        }
+        if (this.crosshairTarget.getType() == HitResult.Type.BLOCK && world.getBlockState(((BlockHitResult)this.crosshairTarget).getBlockPos()).getBlock() instanceof RailBlock && player.getMainHandStack().isEmpty()) {
+            Actionhandler.resumeExisting(((BlockHitResult)this.crosshairTarget).getBlockPos().asLong());
+            System.out.println("resume");
         }
     }
 }
