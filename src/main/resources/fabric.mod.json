@@ -19,7 +19,10 @@
   "environment": "*",
   "entrypoints": {
     "main": [
-    ]
+    ],
+    "modmenu": [
+      "aria1th.main.pistonboltbuilder.compat.modmenu.ModMenuImpl"
+  ]
   },
   "mixins": [
     "pistonboltbuilder.json"
