@@ -36,5 +36,5 @@ Materials are now hardcoded
 - Sticky piston.
 # How to build mod
 1. Download the source code zip and unzip it
-2. Copy the file path and navigate there in command prompt (windows), types cd <file location>
-3. Type /gradlew build. To change something go to the source folder and surf.
+2. Copy the file path and navigate there in command prompt (windows), types cd (file location). ex) cd c:
+3. Type /gradlew build. To change something go to the src folder and surf.
