@@ -15,20 +15,19 @@ Diagonal: https://www.youtube.com/watch?v=idju85Dmu-Q <br>
 Straight: https://www.youtube.com/watch?v=7nXhzq2TBV8 <br>
 
 # Materials
-Materials are now hardcoded
+Some Materials can be changed.
 
 ## Straight
 - Efficiency 5 pickaxe
 - Rails
-- Smooth quartz block
+- Smooth stone block
 - White carpet
 - Repeater
 - Pistons
-- Redstone Torch (directional)
-- Redstone dust.</br>
+- Redstone Torch (directional)<br>
 ## Diagonal
 - Efficeny 5 pickaxe
-- Smooth quartz block
+- Smooth stone block
 - Sea lanterns
 - Rails
 - Repeater
