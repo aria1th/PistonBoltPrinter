@@ -1,9 +1,10 @@
 # PistonBoltPrinter
-A fabric mod that automatically builds piston bolts for you!
+A fabric mod that automatically builds piston bolts for you!<br> 
+[Carpet-mod](https://github.com/gnembon/fabric-carpet) is highly recommended, although it partially works without it.<br>
 # How to use
-1. Place a slime block and right click it with an empty hand, this will create the starting position. 
-2. Place a honey block and right click it with an empty hand, this will set the direction, the piston bolt's direction will be slime block --> honey block, it can go straight or diagonal.
-3. Walk in the direction you set and it will start building.
+type '.' in chat to get more info<br> 
+.pos1 sets first position and determines the origin of the pistonbolt<br> 
+.pos2 has to have one block of air between it and pos1. with pos2 you choose the diredtion<br> 
 # Other info
 Right clicking at nothing with an empty hand will toggle the mod ON/OFF.<br> 
 Carpet extra protocol status check and lacked materials will be printed at chat <br>
