@@ -1,38 +1,39 @@
 package aria1th.main.pistonboltbuilder.utils;
 
+import net.fabricmc.api.ClientModInitializer;
+import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.command.v1.ClientCommandManager;
+import net.fabricmc.fabric.api.client.command.v1.FabricClientCommandSource;
 import net.minecraft.block.Block;
-import net.minecraft.block.Blocks;
-import net.minecraft.block.FluidBlock;
-import net.minecraft.block.BlockState;
+import net.minecraft.block.RailBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.datafixer.fix.ChunkPalettedStorageFix;
+import net.minecraft.text.LiteralText;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Direction;
-import net.minecraft.util.Hand;
-import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.item.Item;
 import net.minecraft.item.Items;
-import net.minecraft.item.ItemStack;
-import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.world.World;
 
 import java.util.LinkedList;
 import java.util.LinkedHashMap;
 
+
+
 public class PistonBoltMain {
     public PistonBoltMain(){
 
     }
+
+
+
     public World world;
     public class ActionYield{
         private final Direction direction;
         private int order;
         private BlockPos blockPos;
         private boolean isStraight = true;
-        private Item powerableBlockItem = Items.SMOOTH_QUARTZ; //can change, how?
+        private Item powerableBlockItem = Items.SMOOTH_STONE; //can change, how?
         private Item pushableItem = Items.SEA_LANTERN; //can change or set it to null, how?
         private LinkedList<Action> currentIterable = new LinkedList<Action>();
         private final LinkedHashMap <Integer, Item> itemMap;
@@ -51,12 +52,10 @@ public class PistonBoltMain {
             // Items.COMPARATOR
             Item repeaterItem = Items.REPEATER;
             this.itemMap.put(2, repeaterItem);
-            if (isStraight) {
-                Item pistonItem = Items.PISTON;
-                this.itemMap.put(3, pistonItem);}
-            else {
-                Item stickyPiston = Items.STICKY_PISTON;
-                this.itemMap.put(3, stickyPiston);}
+            Item pistonItem = Items.PISTON;
+            this.itemMap.put(3, pistonItem);
+            Item stickyPiston = Items.STICKY_PISTON;
+            this.itemMap.put(9, stickyPiston);
             this.itemMap.put(4, powerableBlockItem);
             //can change or set it to null, how?
             Item carpetItem = Items.WHITE_CARPET;
@@ -64,6 +63,8 @@ public class PistonBoltMain {
             Item dustItem = Items.REDSTONE;
             this.itemMap.put(6, dustItem);
             this.itemMap.put(7, pushableItem);
+            Item poweredRailItem = Items.POWERED_RAIL;
+            this.itemMap.put(8, poweredRailItem);
         }
         public Action getNext() {
             if (this.currentIterable.isEmpty()){
@@ -73,7 +74,7 @@ public class PistonBoltMain {
             return this.currentIterable.removeFirst();
         }
         private void addAction(BlockPos blockPos, int itemtype, Direction direction, boolean shouldBreak){
-            Action action = new Action(shouldBreak, blockPos.asLong(), itemtype, this.itemMap, direction.getId());
+            Action action = new Action(blockPos.asLong(), itemtype, direction.getId(), shouldBreak, this.itemMap);
             this.currentIterable.add(action);
         }
         private void generateNewDiagonal(){
@@ -87,8 +88,8 @@ public class PistonBoltMain {
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise), 0, yClockwise, true);//break rail
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,2), 7, yClockwise, false); //block for pushing
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,2), 7, yClockwise, false); //block for pushing
-            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,3), 3, yClockwise, false); //piston
-            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,3), 3, direction, false); //piston
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,3), 9, yClockwise, false); //piston
+            this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,3), 9, direction, false); //piston
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,4), 4, yClockwise, false); //powerable
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(yClockwise,4), 4, yClockwise, false); //powerable
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,5), 2, direction.getOpposite(), false); //repeater
@@ -102,8 +103,8 @@ public class PistonBoltMain {
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise), 0, yClockwise, true); //break rail
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(direction,2), 7, yClockwise, false); //block for pushing
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,2), 7, yClockwise, false); //block for pushing
-            this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(direction,3), 3, yClockwise, false); //piston
-            this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,3), 3, direction, false); //piston
+            this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(direction,3), 9, yClockwise, false); //piston
+            this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,3), 9, direction, false); //piston
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(direction,5), 6, direction, false); //dust
             this.addAction(blockPos.offset(direction,2).offset(yClockwise,2).offset(yClockwise,5), 6, direction, false); //dust
             this.addAction(blockPos.offset(direction).offset(yClockwise).offset(direction,3).up(), 5, Direction.DOWN, false); //carpet
@@ -120,7 +121,92 @@ public class PistonBoltMain {
             Direction direction = this.direction;
             Direction yClockwise = direction.rotateYClockwise();
             Direction yCounterClockwise = direction.rotateYCounterclockwise();
-            if (direction == Direction.EAST || direction == Direction.SOUTH) {
+            if (Actionhandler.isImproved()){
+                if (direction == Direction.EAST || direction == Direction.SOUTH) {
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 8, direction, false); //place powered rail
+                    this.addAction(this.blockPos.offset(direction). offset(yCounterClockwise), 8, direction, true); //break powered rail
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise), 9, direction, false); //sticky piston
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 3), 8, direction, false); //powered rail
+                    this.addAction(this.blockPos.offset(direction, 2), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 0, direction, true); //break rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 7, direction, false); //pushable
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2), 4, direction, false); //powerable left
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise, 2), 2, direction.getOpposite(), false); //repeater left
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2), 4, direction, false); //powerable right
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise, 2), 2, direction.getOpposite(), false); //repeater right
+
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.blockPos = blockPos.offset(direction, 2);
+
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise), 8, direction, false); //place powered rail
+                    this.addAction(this.blockPos.offset(direction). offset(yClockwise), 8, direction, true); //break powered rail
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 9, direction, false); //sticky piston
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 3), 8, direction, false); //powered rail
+                    this.addAction(this.blockPos.offset(direction, 2), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 0, direction, true); //break rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 7, direction, false); //pushable
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2), 4, direction, false); //powerable left
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise, 2), 2, direction.getOpposite(), false); //repeater left
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2), 4, direction, false); //powerable right
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise, 2), 2, direction.getOpposite(), false); //repeater right
+
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.blockPos = blockPos.offset(direction, 2);
+                }
+                if (direction == Direction.WEST || direction == Direction.NORTH) {
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 8, direction, false); //place powered rail
+                    this.addAction(this.blockPos.offset(direction). offset(yCounterClockwise), 8, direction, true); //break powered rail
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise), 9, direction, false); //sticky piston
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 1, direction, false); //place torch
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 3), 8, direction, false); //powered rail
+                    this.addAction(this.blockPos.offset(direction, 2), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 0, direction, true); //break rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 1, direction, true); //break torch
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 7, direction, false); //pushable
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2), 4, direction, false); //powerable left
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise, 2), 2, direction.getOpposite(), false); //repeater left
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2), 4, direction, false); //powerable right
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise, 2), 2, direction.getOpposite(), false); //repeater right
+
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.blockPos = blockPos.offset(direction, 2);
+
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise), 8, direction, false); //place powered rail
+                    this.addAction(this.blockPos.offset(direction). offset(yClockwise), 8, direction, true); //break powered rail
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 9, direction, false); //sticky piston
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 1, direction, false); //place torch
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 3), 8, direction, false); //powered rail
+                    this.addAction(this.blockPos.offset(direction, 2), 0, direction, false); //rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 0, direction, true); //break rail
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise), 1, direction, true); //break torch
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise), 7, direction, false); //pushable
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2), 4, direction, false); //powerable left
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise, 2), 2, direction.getOpposite(), false); //repeater left
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2), 4, direction, false); //powerable right
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yClockwise, 2), 2, direction.getOpposite(), false); //repeater right
+
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction, 2).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise, 2).up(), 5, Direction.DOWN, false); //carpet
+                    this.blockPos = blockPos.offset(direction, 2);
+                }
+            }
+            if (!Actionhandler.isImproved()) {
+                if (direction == Direction.EAST || direction == Direction.SOUTH) {
                     this.addAction(this.blockPos.offset(direction).offset(yClockwise), 0, yClockwise, false);//place rail
                     this.addAction(this.blockPos.offset(direction).offset(direction), 0, direction, false);//place rail
                     this.addAction(this.blockPos.offset(direction), 0, direction, false);//place rail
@@ -138,11 +224,13 @@ public class PistonBoltMain {
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yCounterClockwise).offset(yCounterClockwise), 2, direction.getOpposite(), false); //place repeater, facing east
                     this.addAction(this.blockPos.offset(direction).offset(yClockwise).offset(yClockwise), 2, direction.getOpposite(), false); //place repeater, facing east
                     this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
-                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false);; //place carpet
+                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false);
+                    ; //place carpet
                     this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise).up(), 5, Direction.DOWN, false); //place carpet
-                    this.blockPos = this.blockPos.offset(direction).offset(direction);}//new
-            if (direction == Direction.WEST || direction == Direction.NORTH){
+                    this.blockPos = this.blockPos.offset(direction).offset(direction);
+                }//new
+                if (direction == Direction.WEST || direction == Direction.NORTH) {
                     this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 1, Direction.DOWN, false); //place torch
                     this.addAction(this.blockPos.offset(direction).offset(yClockwise), 0, yClockwise, false);//place rail
                     this.addAction(this.blockPos.offset(direction).offset(direction), 0, direction, false);//place rail
@@ -157,17 +245,19 @@ public class PistonBoltMain {
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yCounterClockwise), 0, yCounterClockwise, true);//break rail
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(direction), 0, direction, true);//break rail
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise), 1, Direction.DOWN, true); //break torch
-                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 3, direction, false); //place piston, facing east
-                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise), 3, direction, false); //place piston, facing east
+                    this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise), 3, direction, false); //place piston
+                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise), 3, direction, false); //place piston
                     this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).offset(yCounterClockwise), 4, direction, false); //place powerableBlock
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise), 4, direction, false); //place powerableBlock
-                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yCounterClockwise).offset(yCounterClockwise), 2, direction.getOpposite(), false); //place repeater, facing east
-                    this.addAction(this.blockPos.offset(direction).offset(yClockwise).offset(yClockwise), 2, direction.getOpposite(), false); //place repeater, facing east
+                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yCounterClockwise).offset(yCounterClockwise), 2, direction.getOpposite(), false); //place repeater
+                    this.addAction(this.blockPos.offset(direction).offset(yClockwise).offset(yClockwise), 2, direction.getOpposite(), false); //place repeater
                     this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
-                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise).up(), 5, Direction.DOWN, false);; //place carpet
+                    this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).offset(yClockwise).up(), 5, Direction.DOWN, false);
+                    ; //place carpet
                     this.addAction(this.blockPos.offset(direction).offset(yCounterClockwise).up(), 5, Direction.DOWN, false); //place carpet
                     this.addAction(this.blockPos.offset(direction).offset(direction).offset(yClockwise).up(), 5, Direction.DOWN, false); //place carpet
                     this.blockPos = this.blockPos.offset(direction).offset(direction);//new
+                }
             }
         }
         public class Action {
@@ -176,12 +266,12 @@ public class PistonBoltMain {
             public int itemType;
             public LinkedHashMap<Integer, Item> itemMap = new LinkedHashMap<Integer, Item>();
             public int relativeDirection = 0;
-            public Action (boolean ShouldBreak, Long blockPos, int itemType, LinkedHashMap<Integer, Item> itemMap, int relativeDirection){
-                this.ShouldBreak = ShouldBreak;
+            public Action (Long blockPos, int itemType, int relativeDirection, boolean ShouldBreak, LinkedHashMap<Integer, Item> itemMap){
                 this.blockPos = blockPos;
                 this.itemType = itemType;
-                this.itemMap = itemMap;
                 this.relativeDirection = relativeDirection;
+                this.ShouldBreak = ShouldBreak;
+                this.itemMap = itemMap;
             }
             public boolean isSuccess(){
                 World world = MinecraftClient.getInstance().world;
