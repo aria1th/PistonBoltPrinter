@@ -4,10 +4,9 @@ import net.minecraft.block.*;
 import net.minecraft.enchantment.EnchantmentHelper;
 //import net.minecraft.block.FluidBlock;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.world.ClientWorld;
-import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.text.Text;
 import net.minecraft.entity.player.PlayerInventory;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.math.Direction;
@@ -18,18 +17,16 @@ import net.minecraft.item.Items;
 import net.minecraft.item.ItemStack;
 import net.minecraft.network.packet.c2s.play.UpdateSelectedSlotC2SPacket;
 import net.minecraft.network.packet.c2s.play.PlayerActionC2SPacket;
+import net.minecraft.util.registry.Registry;
 import net.minecraft.world.World;
-import aria1th.main.pistonboltbuilder.utils.PistonBoltMain;
 import aria1th.main.pistonboltbuilder.utils.PistonBoltMain.ActionYield;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static com.google.common.collect.Iterables.size;
-
 
 public class Actionhandler {
-    private final static int actionPerTick = 6;
+    private static final int actionsPerTick = 6;
     private static String previousMessage = null;
     private static int waitTime = 0;
     private static boolean carpetAvailable = true;
@@ -38,20 +35,23 @@ public class Actionhandler {
     private static BlockPos carpetUsedBlockPos = null;
     private static final PistonBoltMain pistonHandler = new PistonBoltMain();
     private static final LinkedList<Actionhandler> actionList = new LinkedList<>();
-    private final List<PistonBoltMain.ActionYield.Action> temporaryActionList = new ArrayList<>();
+    private final List<ActionYield.Action> temporaryActionList = new ArrayList<>();
     private final LinkedHashMap<Long, Boolean> temporaryActionListBool = new LinkedHashMap<>();
     private static Long pos1 = null;
     private static Long pos2 = null;
     private static boolean isOff = true;
     private static Long tick = 0L;
-    private PistonBoltMain.ActionYield.Action previousAction = null;
+    private ActionYield.Action previousAction = null;
     private static final int reachDistance = 5;
-    private final PistonBoltMain.ActionYield actionYield;
+    private final ActionYield actionYield;
     private static MinecraftClient mc = MinecraftClient.getInstance();
     private final World clientWorld;
-    private static final Item powerableBlockItem = Items.SMOOTH_QUARTZ; //can change, how?
-    private static final Item carpetItem = Items.WHITE_CARPET; //can change or set it to null, how?
-    private static final Item pushableItem = Items.SEA_LANTERN; //can change or set it to null, how?
+    private static Item powerableBlockItem = Items.SMOOTH_STONE; //can change, now
+    private static Item carpetBlockItem = Items.WHITE_CARPET; //can change now
+    private static Item pushableBlockItem = Items.SEA_LANTERN; //can change now?
+    private static boolean improved = false;
+
+
     private void checkCarpetExtra(){
         if (carpetChecked) {return;}
         if (carpetUsedBlockPos != null && tick > carpetCheckedTick + 45L){
@@ -95,12 +95,12 @@ public class Actionhandler {
         BlockPos startPos1 = BlockPos.fromLong(startPos);
         this.clientWorld = clientWorld;
         mc = MinecraftClient.getInstance();
-        this.actionYield = pistonHandler.new ActionYield(direction, startPos, powerableBlockItem, pushableItem, isStraight);
+        this.actionYield = pistonHandler.new ActionYield(direction, startPos, powerableBlockItem, pushableBlockItem, isStraight);
         actionList.add(this);
     }
 
     public static void tickAll(){
-        for (int i = 0; i< actionPerTick; i++){
+        for (int i = 0; i< actionsPerTick; i++){
             for (Actionhandler lv : actionList){
                 if (MinecraftClient.getInstance().world.equals(lv.clientWorld)) {lv.tick();}
             }
@@ -350,16 +350,21 @@ public class Actionhandler {
             }
         }
         //this.temporaryActionList.forEach(System.out::println);
-        PistonBoltMain.ActionYield.Action action = this.actionYield.getNext();
+        ActionYield.Action action = this.actionYield.getNext();
         if(!action.isSuccess()) {
             processAction(action);
         }
         this.previousAction = action;
     }
     public static void toggleOnOff(){
-        isOff = !isOff;
+        if(carpetChecked == true){
+            isOff = !isOff;
+            chatMessage(Text.of("building: " + !isOff));
+            System.out.println("building: " + !isOff);
+        }
+        else{chatMessage(Text.of("somethings wrong with carpet-extra accurate block placement. Make sure '/carpet accurateBlockPlacement' is set to true"));}
     }
-    private boolean checkAction(PistonBoltMain.ActionYield.Action action){
+    private boolean checkAction(ActionYield.Action action){
         boolean shouldBreak = action.ShouldBreak;
         Long longPos = action.blockPos;
         Block block = Block.getBlockFromItem(action.itemMap.get(action.itemType));
@@ -370,10 +375,10 @@ public class Actionhandler {
             return mc.world.getBlockState(BlockPos.fromLong(longPos)).isOf(block);
         }
     }
-    private static boolean canProcess(PistonBoltMain.ActionYield.Action action){
+    private static boolean canProcess(ActionYield.Action action){
         return action.ShouldBreak || canPlaceFace(action.itemMap.get(action.itemType), Direction.byId(action.relativeDirection)) && isWithinReach(BlockPos.fromLong(action.blockPos));
     }
-    private boolean processAction(PistonBoltMain.ActionYield.Action action){
+    private boolean processAction(ActionYield.Action action){
         boolean shouldBreak = action.ShouldBreak;
         Long longPos = action.blockPos;
         Block block = Block.getBlockFromItem(action.itemMap.get(action.itemType));
@@ -430,5 +435,40 @@ public class Actionhandler {
             }
         }
         return bestSlot;
+    }
+
+
+    //getter and setter
+
+    public static Item getPowerableBlockItem() {
+        return powerableBlockItem;
+    }
+
+    public static void setPowerableBlockItem(String powerableBlockItemid) {
+        Actionhandler.powerableBlockItem = Registry.ITEM.get(new Identifier("minecraft", powerableBlockItemid));
+    }
+
+    public static Item getCarpetBlockItem() {
+        return carpetBlockItem;
+    }
+
+    public static void setCarpetBlockItem(String carpetItemid) {
+        Actionhandler.carpetBlockItem = Registry.ITEM.get(new Identifier("minecraft", carpetItemid));
+    }
+
+    public static Item getPushableBlockItem() {
+        return pushableBlockItem;
+    }
+
+    public static void setPushableBlockItem(String pushableItemid) {
+        Actionhandler.pushableBlockItem = Registry.ITEM.get(new Identifier("minecraft", pushableItemid));
+    }
+
+    public static boolean isImproved() {
+        return improved;
+    }
+
+    public static void toggleImproved() {
+        improved = !improved;
     }
 }
