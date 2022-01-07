@@ -39,7 +39,7 @@ public class Actionhandler {
     private final LinkedHashMap<Long, Boolean> temporaryActionListBool = new LinkedHashMap<>();
     private static Long pos1 = null;
     private static Long pos2 = null;
-    private static boolean isOff = true;
+    private static boolean isOff = false;
     private static Long tick = 0L;
     private ActionYield.Action previousAction = null;
     private static final int reachDistance = 5;
@@ -50,6 +50,8 @@ public class Actionhandler {
     private static Item carpetBlockItem = Items.WHITE_CARPET; //can change now
     private static Item pushableBlockItem = Items.SEA_LANTERN; //can change now?
     private static boolean improved = false;
+    private static boolean bidirectional = false;
+    private static boolean encoded = false;
 
 
     private void checkCarpetExtra(){
@@ -95,7 +97,7 @@ public class Actionhandler {
         BlockPos startPos1 = BlockPos.fromLong(startPos);
         this.clientWorld = clientWorld;
         mc = MinecraftClient.getInstance();
-        this.actionYield = pistonHandler.new ActionYield(direction, startPos, powerableBlockItem, pushableBlockItem, isStraight);
+        this.actionYield = pistonHandler.new ActionYield(direction, startPos, isStraight, isImproved(), isBidirectional(), isEncoded());
         actionList.add(this);
     }
 
@@ -467,8 +469,21 @@ public class Actionhandler {
     public static boolean isImproved() {
         return improved;
     }
-
     public static void toggleImproved() {
         improved = !improved;
+    }
+
+    public static boolean isBidirectional() {
+        return bidirectional;
+    }
+    public static void toggleBidirectiona() {
+        bidirectional = !bidirectional;
+    }
+
+    public static boolean isEncoded() {
+        return encoded;
+    }
+    public static void toggleEncoded() {
+        encoded = !encoded;
     }
 }
