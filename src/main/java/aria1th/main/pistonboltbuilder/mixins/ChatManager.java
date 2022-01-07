@@ -70,6 +70,14 @@ public abstract class ChatManager {
                         Actionhandler.toggleImproved();
                         Actionhandler.chatMessage(Text.of("improved: " + Actionhandler.isImproved()));
                         break;
+                    case "togglebidirectional" :
+                        Actionhandler.toggleBidirectiona();
+                        Actionhandler.chatMessage(Text.of("bidirectional: " + Actionhandler.isBidirectional()));
+                        break;
+                    case "toggleencoded" :
+                        Actionhandler.toggleEncoded();
+                        Actionhandler.chatMessage(Text.of("encoded: " + Actionhandler.isEncoded()));
+                        break;
                     case "pos1" :
                         Actionhandler.registerStartPos(MinecraftClient.getInstance().player.getBlockPos().asLong());
                         Actionhandler.chatMessage(Text.of("pos1: " + MinecraftClient.getInstance().player.getBlockPos()));
