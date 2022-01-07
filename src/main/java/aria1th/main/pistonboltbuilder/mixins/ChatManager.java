@@ -125,8 +125,21 @@ public abstract class ChatManager {
                Commands:
                .pos1 : sets the first position
                .pos2 : sets the second postition
-               .powerableblock : shows the current powerable block
+               .toggle : pauses and resumes the building process
+               .powerableblock : shows the current powerable block (block that carrys on the redstone signal)
                .powerableblock {Block id} : sets the powerable block
+               .carpetblock : shows the current block placed on top of the pistonbolt (usually carpet)
+               .carpetblock {Block id} : sets the carpet block
+               .pushableblock : shows the current pushable block (block thats being placed in front of sticky pistons)
+               .pushableblock {Block id} : sets the pushable block
+               .toggleimproved : toggles the improved pistonbolt mode
+                   Improved Design [READ!]: was discoverd by Inspector Talon and Carbsna aka Fake Story at the same time seperately. It uses half the amount of pistons and can be easily repaired. currently it can't be constructed automatically. After you are finished building turn perpendicular to the direction of the pistonbolt and place powered rails in the middle. The break the other powered rails.
+               .toggledirectional : toggles the bidirectional (Nutbolt) mode.
+                   Bidirectional/Nutbolt [READ!]: The Nutbolt is a bidirectional Pistonbolt that has only one set of rails. It was invented by Members of the Nuttech SMP (I belive MaxEvilMan and Carbsna aka Fake Story)
+               .toggleencoded : toggles wether to use repeaters or comparators
+               .resume : Stand on top of a pistonbolt and execute command to resume this pistonbolt
+               .help : show this message
+               
                """;
     }
 }
